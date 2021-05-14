@@ -1,0 +1,54 @@
+version: '3.8'
+services:
+  php:
+    build: php
+    container_name: docker_symfony_php
+    # user: '1000:1000'
+    ports:
+      - '8080:80'
+    volumes:
+      - ./php/vhosts:/etc/apache2/sites-enabled
+      - ./:/var/www
+    # restart: always
+    networks:
+      - dev
+
+  db:
+    image: mysql:8.0
+    container_name: docker_symfony_db
+    # restart: always
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    networks:
+      - dev
+
+  phpmyadmin:
+    image: phpmyadmin:5.1
+    container_name: docker_symfony_phpmyadmin
+    # restart: always
+    depends_on:
+      - db
+    ports:
+      - 8081:80
+    environment:
+      PMA_HOST: db
+    networks:
+      - dev
+
+  maildev:
+    image: maildev/maildev
+    container_name: docker_symfony_maildev
+    # restart: always
+    command: bin/maildev --web 80 --smtp 25 --hide-extensions STARTTLS
+    ports:
+      - '8082:80'
+    networks:
+      - dev
+
+networks:
+  dev:
+
+volumes:
+  db-data:
